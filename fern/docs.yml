@@ -1,0 +1,12 @@
+instances:
+  - url: https://anon.docs.buildwithfern.com
+title: Anon | Documentation
+navigation:
+  - section: Getting Started
+    contents: 
+      - page: Welcome
+        path: ./pages/welcome.mdx
+  - api: API Reference
+colors:
+  accentPrimary: '#ffffff'
+  background: '#000000'

@@ -1,0 +1,531 @@
+openapi: 3.0.0
+info:
+  title: Anon.com API
+  description: Welcome to the REST API Reference for Anon.
+  contact:
+    email: dev@anon.com
+  termsOfService: https://www.anon.com/legal/service
+  version: 1.0.0
+externalDocs:
+  url: https://docs.anon.com
+servers:
+  - url: https://svc.sandbox.anon.com/
+    description: Sandbox API
+  - url: https://svc.prod.anon.com/
+    description: Production API
+components:
+  securitySchemes:
+    AppUserBearerAuth:
+      type: http
+      scheme: bearer
+      description: This header uses a JWT (JSON Web Token) in the Bearer schema for request authentication. The token follows the OpenID Connect Core 1.0 specification, with the subject (sub) claim set to the user's ID in your system.
+    ApiKeyBearerAuth:
+      type: apiKey
+      scheme: bearer
+      in: header
+      name: Authorization
+      description: Your Anon API Key
+    SdkClientIdAuth:
+      type: apiKey
+      in: header
+      name: X-Anon-Sdk-Client-Id
+      description: Your Anon Link SdkClient ID
+  parameters:
+    SdkClientIdHeader:
+      name: X-Anon-Sdk-Client-Id
+      in: header
+      required: true
+      schema:
+        type: string
+      description: Your Anon SdkClient ID.
+    ApiKeyAuthorizationHeader:
+      name: Authorization
+      in: header
+      required: true
+      schema:
+        type: string
+        description: Your Anon API Key
+  schemas:
+    SdkClientKind:
+      description: Whether this is a backend API Key or a frontend SDK client ID
+      oneOf:
+        - type: string
+          enum:
+            - service
+        - type: object
+          properties:
+            application:
+              type: object
+              properties:
+                userPoolId:
+                  type: string
+          required:
+            - application
+    AppUserIdToken:
+      type: object
+      required:
+        - appUserIdToken
+      properties:
+        appUserIdToken:
+          type: string
+    CreateAppUserIdToken:
+      type: object
+      required:
+        - userPoolId
+        - appUserId
+      properties:
+        userPoolId:
+          $ref: '#/components/schemas/UserPoolId'
+        appUserId:
+          type: string
+        exp:
+          type: integer
+          minimum: 0
+          maximum: 4294967295
+          nullable: true
+    CreateOrganization:
+      type: object
+      required:
+        - name
+        - member
+      properties:
+        name:
+          type: string
+        member:
+          $ref: '#/components/schemas/CreateOrganizationMember'
+    CreateOrganizationMember:
+      type: object
+      required:
+        - name
+        - email
+        - password
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+    Organization:
+      type: object
+      required:
+        - id
+        - name
+        - members
+      properties:
+        id:
+          $ref: '#/components/schemas/OrganizationId'
+        name:
+          type: string
+        logoUrl:
+          type: string
+          nullable: true
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/Member'
+    OrganizationId:
+      type: string
+    CreateMember:
+      type: object
+      required:
+        - organizationId
+        - name
+        - email
+        - password
+        - role
+      properties:
+        organizationId:
+          $ref: '#/components/schemas/OrganizationId'
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        role:
+          $ref: '#/components/schemas/MemberRole'
+    Member:
+      description: Members of an organization can create api keys, user pools, and sdk clients
+      type: object
+      required:
+        - id
+        - name
+        - email
+        - organizationId
+        - role
+      properties:
+        id:
+          $ref: '#/components/schemas/MemberId'
+        name:
+          type: string
+        email:
+          type: string
+        organizationId:
+          $ref: '#/components/schemas/OrganizationId'
+        role:
+          $ref: '#/components/schemas/MemberRole'
+    MemberId:
+      type: string
+    MemberRole:
+      type: string
+    MemberRoleAdmin:
+      type: string
+      allOf:
+        - $ref: '#/components/schemas/MemberRole'
+        - enum:
+            - Admin
+    MemberRoleMember:
+      type: string
+      allOf:
+        - $ref: '#/components/schemas/MemberRole'
+        - enum:
+            - Member
+    MemberRoleReadOnly:
+      type: string
+      allOf:
+        - $ref: '#/components/schemas/MemberRole'
+        - enum:
+            - ReadOnly
+    LoginMember:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    LoginSession:
+      description: |-
+        A session token that can be used to authenticate as an Anon Member identity
+        for use in subsequent requests as a `Bearer` token via `Authorization` header.
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+    CreateSdkClient:
+      type: object
+      required:
+        - organizationId
+        - name
+        - description
+      properties:
+        organizationId:
+          $ref: '#/components/schemas/OrganizationId'
+        name:
+          type: string
+        kind:
+          $ref: '#/components/schemas/SdkClientKind'
+        description:
+          type: string
+    SdkClient:
+      type: object
+      required:
+        - id
+        - name
+        - description
+        - organizationId
+      properties:
+        id:
+          $ref: '#/components/schemas/SdkClientId'
+        name:
+          type: string
+        description:
+          type: string
+        organizationId:
+          $ref: '#/components/schemas/OrganizationId'
+    SdkClientId:
+      type: string
+    CreateUserPool:
+      type: object
+      required:
+        - name
+        - description
+        - organizationId
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        authorization:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/AuthorizationTypeInput'
+          nullable: true
+        organizationId:
+          $ref: '#/components/schemas/OrganizationId'
+    UserPool:
+      type: object
+      required:
+        - id
+        - name
+        - description
+        - authorization
+        - organizationId
+      properties:
+        id:
+          $ref: '#/components/schemas/UserPoolId'
+        name:
+          type: string
+        description:
+          type: string
+        authorization:
+          $ref: '#/components/schemas/AuthorizationType'
+        organizationId:
+          $ref: '#/components/schemas/OrganizationId'
+    UserPoolId:
+      type: string
+    AuthorizationType:
+      $ref: '#/components/schemas/JwksBody'
+    AuthorizationTypeInput:
+      $ref: '#/components/schemas/JwksBody'
+    JwksBody:
+      type: object
+      required:
+        - jwksUri
+      properties:
+        jwksUri:
+          type: string
+        idClaim:
+          type: string
+          nullable: true
+paths:
+  /org/organization:
+    post:
+      tags:
+        - Organization
+      summary: Create a new Organization
+      description: This endpoint creates a new `Organization`.
+      operationId: createOrganization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrganization'
+      responses:
+        "200":
+          description: Organization created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+              examples:
+                Organization:
+                  value:
+                    id: e8f9931b-3955-4b4d-bce4-ccdac533dd4e
+                    name: CoolKidCorp
+                    members:
+                      - id: f4a1e303-92ab-429a-8bab-96aec3be932b
+                        email: dev@coolkidcorp.ai
+                        role: Admin
+  /org/organization/{organizationId}:
+    get:
+      tags:
+        - Organization
+      summary: Get an existing Organization
+      description: This endpoint looks up an existing `Organization`.
+      operationId: getOrganization
+      parameters:
+        - name: organizationId
+          in: path
+          required: true
+          description: ID of the Organization
+          schema:
+            $ref: '#/components/schemas/OrganizationId'
+      responses:
+        "200":
+          description: Organization details retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+              examples:
+                Organization:
+                  value:
+                    id: e8f9931b-3955-4b4d-bce4-ccdac533dd4e
+                    name: CoolKidCorp
+                    members:
+                      - id: f4a1e303-92ab-429a-8bab-96aec3be932b
+                        email: dev@coolkidcorp.ai
+                        role: Admin
+  /org/member:
+    post:
+      tags:
+        - Member
+      summary: Create a new Member
+      description: This endpoint creates and adds a new `Member` to an `Organization`.
+      operationId: createMember
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMember'
+      responses:
+        "200":
+          description: Member created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+      security:
+        - BearerAuth: []
+  /org/member/{memberId}:
+    get:
+      tags:
+        - Member
+      summary: Get an existing Member
+      description: This endpoint looks up an existing `Member`.
+      operationId: getMember
+      parameters:
+        - name: memberId
+          in: path
+          required: true
+          description: ID of the Member
+          schema:
+            $ref: '#/components/schemas/MemberId'
+      responses:
+        "200":
+          description: Member details retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+  /org/login:
+    post:
+      tags:
+        - Member
+      summary: Member Login
+      description: This endpoint returns an Anon Bearer Session token using `Member` credentials.
+      operationId: memberLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginMember'
+      responses:
+        "200":
+          description: Login successful, session token returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginSession'
+      security:
+        - BearerAuth: []
+  /org/sdkClient:
+    post:
+      tags:
+        - SdkClient
+      summary: Create a new SdkClient
+      description: This endpoint creates a new `SdkClient`.
+      operationId: createSdkClient
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSdkClient'
+      responses:
+        "200":
+          description: SdkClient created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SdkClient'
+      security:
+        - BearerAuth: []
+  /org/sdkClient/{sdkClientId}:
+    get:
+      tags:
+        - SdkClient
+      summary: Get an existing SdkClient
+      description: This endpoint looks up an existing `SdkClient`.
+      operationId: getSdkClient
+      parameters:
+        - name: sdkClientId
+          in: path
+          required: true
+          description: ID of the SdkClient.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: SdkClient details retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SdkClient'
+      security:
+        - BearerAuth: []
+  /org/userPool:
+    post:
+      tags:
+        - UserPool
+      summary: Create a new UserPool
+      description: This endpoint creates a new `UserPool`. UserPools associate a particular application with a group of users, and determines how those users are identified and authenticated via the `authorization` field. `authorization` should use the public JWKS URI of your identity provider. If you would like to use an `idClaim` other than the default `sub`, such as `email`, you may specify it here as well. If `authorization` is omitted, the UserPool will be configured as "Anon-hosted". This means you can use Anon as your identity provider by issuing AppUserIdTokens from `/org/appUserIdToken`.
+      operationId: createUserPool
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserPool'
+        description: ""
+      responses:
+        "200":
+          description: UserPool created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPool'
+      security:
+        - BearerAuth: []
+  /org/userPool/{userPoolId}:
+    get:
+      tags:
+        - UserPool
+      summary: Get an existing UserPool
+      description: This endpoint looks up an existing `UserPool`.
+      operationId: getUserPool
+      parameters:
+        - name: userPoolId
+          in: path
+          required: true
+          description: ID of the `UserPool`.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: UserPool details retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPool'
+      security:
+        - BearerAuth: []
+  /org/appUserIdToken:
+    post:
+      tags:
+        - AppUserIdToken
+      summary: Issue a new AppUserIdToken
+      description: Issues a new `AppUserIdToken` to be used as a bearer token for authenticating app user traffic. **Can only be used with Anon-hosted UserPools**. In this case, Anon serves as your identity provider, issuing and validating tokens for your users. For each app user you want to connect to Anon, call this endpoint with that user's ID to issue an AppUserIdToken that they can use for authentication with Anon. This credential is sensitive and can be used to access that user's sessions, so it should be stored securely or not at all. You may call this route whenever you need to issue a new AppUserIdToken (for example, upon login or token expiration). Duplicate calls with the same user ID will refresh the expiration, but will have no other effects. Takes an optional `exp`iration; this defaults to 6 months from time of issuing.
+      operationId: createAppUserIdToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAppUserIdToken'
+      responses:
+        "200":
+          description: AppUserIdToken created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppUserIdToken'
