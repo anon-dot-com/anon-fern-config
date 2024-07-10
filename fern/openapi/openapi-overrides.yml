@@ -49,3 +49,11 @@ paths:
       x-fern-sdk-group-name:
         - appUserIdToken
       x-fern-sdk-method-name: create
+components:
+  securitySchemes:
+    ApiKeyBearerAuth:
+      type: http
+      scheme: bearer
+      x-fern-bearer:
+        name: apiKey
+        env: API_KEY

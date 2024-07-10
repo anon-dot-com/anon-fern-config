@@ -41,7 +41,17 @@ navigation:
     layout: 
       - api: APIs
         skip-slug: true
+        snippets: 
+          typescript: anon
   - tab: changelog
+
+navbar-links:
+  - type: secondary
+    text: Support
+    url: "mailto:support@anon.com"
+  - type: primary
+    text: Get Access
+    url: https://anondotcom.typeform.com/request-access
 
 favicon: ./assets/favicon.svg
 

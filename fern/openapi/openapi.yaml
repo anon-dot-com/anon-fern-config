@@ -14,37 +14,6 @@ servers:
   - url: https://svc.prod.anon.com/
     description: Production API
 components:
-  securitySchemes:
-    AppUserBearerAuth:
-      type: http
-      scheme: bearer
-      description: This header uses a JWT (JSON Web Token) in the Bearer schema for request authentication. The token follows the OpenID Connect Core 1.0 specification, with the subject (sub) claim set to the user's ID in your system.
-    ApiKeyBearerAuth:
-      type: apiKey
-      scheme: bearer
-      in: header
-      name: Authorization
-      description: Your Anon API Key
-    SdkClientIdAuth:
-      type: apiKey
-      in: header
-      name: X-Anon-Sdk-Client-Id
-      description: Your Anon Link SdkClient ID
-  parameters:
-    SdkClientIdHeader:
-      name: X-Anon-Sdk-Client-Id
-      in: header
-      required: true
-      schema:
-        type: string
-      description: Your Anon SdkClient ID.
-    ApiKeyAuthorizationHeader:
-      name: Authorization
-      in: header
-      required: true
-      schema:
-        type: string
-        description: Your Anon API Key
   schemas:
     SdkClientKind:
       description: Whether this is a backend API Key or a frontend SDK client ID
