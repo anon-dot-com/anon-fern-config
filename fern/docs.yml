@@ -1,12 +1,73 @@
 instances:
   - url: https://anon.docs.buildwithfern.com
 title: Anon | Documentation
+
+layout: 
+  page-width: full
+  tabs-placement: header
+  searchbar-placement: header
+
+tabs: 
+  docs: 
+    display-name: Docs
+  reference:
+    display-name: APIs and SDKs
+    slug: reference
+  changelog:
+    display-name: Changelog
+    changelog: ./openapi/changelog 
+  
 navigation:
-  - section: Getting Started
-    contents: 
-      - page: Welcome
-        path: ./pages/welcome.mdx
-  - api: API Reference
+  - tab: docs
+    layout: 
+      - section: General
+        contents: 
+          - page: Introduction
+            slug: overview
+            icon: home
+            path: ./pages/overview.mdx
+      - section: Connecting user sessions
+        contents: 
+          - page: User sessions
+            slug: overview
+            icon: link
+            path: ./pages/user-sessions.mdx
+          - section: Platforms
+            contents: 
+              - page: Web
+                icon: fa-regular fa-globe
+                path: ./pages/web.mdx
+  - tab: reference
+    layout: 
+      - api: APIs
+        skip-slug: true
+  - tab: changelog
+
+favicon: ./assets/favicon.svg
+
+logo: 
+  light: ./assets/logo-light-mode.svg 
+  dark: ./assets/logo-dark-mode.svg
+  height: 50
+
 colors:
-  accentPrimary: '#ffffff'
-  background: '#000000'
+  accentPrimary: 
+    light: '#ad99ff'
+    dark: '#ad99ff'
+  background: 
+    light: '#ffffff'
+    dark: '#000000'
+
+typography:
+  bodyFont:
+    name: Alliance
+    paths: 
+      - path: ./assets/AllianceNo1Regular.woff2
+        weight: "400"
+      - path: ./assets/AllianceNo1Medium.woff2
+        weight: "500"
+  headingsFont:
+    name: Alliance
+    paths: 
+      - path: ./assets/AllianceNo2SemiBold.woff2
+        weight: "600"

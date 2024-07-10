@@ -1,0 +1,41 @@
+---
+title: "Overview"
+subtitle: "Securely collect and connect end-user accounts to your app"
+---
+
+Connecting user sessions refers to the process of securely collecting end-user credentials and linking them to your application. This allows your app to access and interact with your end-users' accounts on supported third-party services.
+Anon provides SDKs and integrations to seamlessly handle the user connection flow directly within your web and mobile apps.
+
+## Key Features
+
+- **Embedded UI**: Pops up a pre-built interface that guides users through connecting their account.
+- **Native branding**: Pulls in your logo as well as logos of integrations that a user connects.
+- **Authentication**: Anon authenticates end-user credentials, handles multi-factor authentication, does proxying, and more.
+
+## How It Works
+The flow is similar to OAuth 2.0 (think "Sign In with Google") but leverages user-permissioned authentication instead of APIs provided by integration partners.
+
+Here's an overview of how the user connection flow works:
+<Steps>
+  ### User launches Anon's UI
+    Your user clicks a "Connect Account" button in your app, which launches Anon's pre-built UI as an overlay.
+  ### User installs Chrome extension
+    Anon prompts your user to install a Chrome extension, which facilitates the credential collection process.
+  ### User logs in to third-party service
+    Your user enters their credentials directly into the third-party service's website via the Anon overlay and extension.
+  ### Anon encrypts and stores session
+    Upon successful login, Anon validates, encrypts and stores your user's session details. The session is now connected to your application.
+</Steps>
+By the end of the flow, your user's session is securely connected and your application can begin automating actions on their behalf (by running the user session). The whole process is handled client-side, without credentials passing through your servers.
+
+Anon also proactively monitors the validity of connected sessions. If a session becomes expired or invalid, Anon can automatically trigger a re-authentication notification for your users, ensuring your application maintains a valid connection.
+
+# Next Steps
+<CardGroup cols={2}>
+  <Card title="Create an SDK Client" icon="circle-plus" href="/docs/connecting-user-sessions/create-sdkclient">
+    Connect your app's users to Anon
+  </Card>
+  <Card title="Run User Sessions" icon="rocket" href="/docs/running-user-sessions/overview">
+    Execute actions on behalf of connected user sessions
+  </Card>
+</CardGroup>

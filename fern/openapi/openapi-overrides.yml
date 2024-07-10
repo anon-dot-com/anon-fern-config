@@ -1,0 +1,51 @@
+paths:
+  /org/organization:
+    post:
+      x-fern-sdk-group-name:
+        - organization
+      x-fern-sdk-method-name: create
+  /org/organization/{organizationId}:
+    get:
+      x-fern-sdk-group-name:
+        - organization
+      x-fern-sdk-method-name: get
+  /org/member:
+    post:
+      x-fern-sdk-group-name:
+        - member
+      x-fern-sdk-method-name: create
+  /org/member/{memberId}:
+    get:
+      x-fern-sdk-group-name:
+        - member
+      x-fern-sdk-method-name: get
+  /org/login:
+    post:
+      x-fern-sdk-group-name:
+        - member
+      x-fern-sdk-method-name: login
+  /org/sdkClient:
+    post:
+      x-fern-sdk-group-name:
+        - sdkClient
+      x-fern-sdk-method-name: create
+  /org/sdkClient/{sdkClientId}:
+    get:
+      x-fern-sdk-group-name:
+        - sdkClient
+      x-fern-sdk-method-name: get
+  /org/userPool:
+    post:
+      x-fern-sdk-group-name:
+        - userPool
+      x-fern-sdk-method-name: create
+  /org/userPool/{userPoolId}:
+    get:
+      x-fern-sdk-group-name:
+        - userPool
+      x-fern-sdk-method-name: get
+  /org/appUserIdToken:
+    post:
+      x-fern-sdk-group-name:
+        - appUserIdToken
+      x-fern-sdk-method-name: create

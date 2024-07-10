@@ -1,0 +1,302 @@
+---
+title: "Web"
+subtitle: "Embed the account connection flow in your web app"
+---
+
+# Intro
+
+Anon provides a pre-built UI and Chrome extension to facilitate connecting user accounts in your web application. Users simply click a button, follow the guided flow to log in to third-party services, and Anon securely stores their session.
+
+<Info>
+  Please have an webapp `SdkClient` ready. Anon may have provided one via a set of 1password credentials, or you could [create your own](/docs/connecting-user-sessions/create-sdkclient).
+</Info>
+
+Here's how to integrate the account connecting flow into your web app:
+
+# Web Typescript SDK
+
+The Web SDK embeds in your web app and presents a login UI which communicates with a Chrome extension that allows a user to grant your application access to their account. Let's get started!
+
+<Tip>
+  You can get started with React and Vue examples [here](https://github.com/anon-dot-com/examples/).
+</Tip>
+
+### Step 1
+
+Create a `.npmrc` file in the same directory as your `package.json` with the following snippet, replacing `${NPM_TOKEN}` with the auth token received from Anon.
+
+```jsx
+@anon:registry=https://npm.cloudsmith.io/anon/anon-sdk/
+//npm.cloudsmith.io/anon/anon-sdk/:_authToken=${NPM_TOKEN}
+@npm:registry=https://registry.npmjs.org/
+```
+
+### Step 2
+
+Add the SDK package to your project's `package.json`
+
+```bash
+npm install '@anon/sdk-web-link-typescript@^0.5.0'
+# or
+yarn add '@anon/sdk-web-link-typescript@^0.5.0'
+```
+
+### Step 3
+
+Integrate the SDK into your application. You can find complete examples of integrating the account connection flow in Anon's [examples repo](https://github.com/anon-dot-com/examples).
+
+<Warning>
+For the `environment` config, please use `"sandbox"`.
+</Warning>
+
+<Warning>
+For the `SdkClient` id, please make sure to use the one associated with your [`UserPool`](/docs/general/glossary#userpool).
+</Warning>
+
+Here are some code examples of applications integrated into Anon:
+
+<AccordionGroup>
+  <Accordion title="Examples">
+    <CodeBlock>
+      ```tsx App.tsx
+      import AnonLink from "@anon/sdk-web-link-typescript";
+
+      function App() {
+        const onSuccess = () => {
+          console.log("success");
+        };
+        const onExit = (error: any) => {
+          anonLinkInstance.destroy();
+        };
+
+        // Initialize AnonLink with configuration settings.
+        const anonLinkInstance = AnonLink.init({
+          config: {
+            // Change to the appropriate environment as needed.
+            environment: "sandbox",
+            // The uuid of your SdkClient /associated with your UserPool/
+            // ie the one which returned   "auth": { "type": "userPool", "userPoolId": "..." }
+            clientId: "7190a924-ce91-[redacted]",
+            // Your application user ID token, eg the JWT
+            // May be Anon-provided as the `example_app_user_id_token` from 1pass
+            appUserIdToken: "eyJhbGciOiJSUzI1NiIsImtp....[redacted]",
+            // Update per the app you're testing with.
+            app: "instagram",
+            // Replace with your company's actual name.
+            company: "My Company",
+            // Provide a full URL to your company's logo image.
+            companyLogo: "https://assets-global.website-files.com/65aa784d1e7b42a7f2f428bb/65c30d047199273eb47d3b35_favicon.ico",
+            // Use the Chrome extension ID you're using,
+            // eg the official Anon Link extension would be "lbgbplnejdpahnfmnphghjlbedpjjbgd"
+            // Make sure this matches the ID in the "My Extensions" page in Chrome
+            chromeExtensionId: "lbgbplnejdpahnfmnphghjlbedpjjbgd",
+          },
+          onSuccess, // Callback function to handle success events.
+          onExit, // Callback function to handle exit or failure events.
+        });
+
+        const open = () => {
+          anonLinkInstance.open();
+        };
+
+        return (
+          <div className="App">
+            <header className="App-header">
+              <button onClick={open}>Open Anon Link</button>
+            </header>
+          </div>
+        );
+      }
+
+      export default App;
+      ```
+      ```html App.vue
+      <script setup lang="ts">
+      import { ref, onBeforeUnmount } from 'vue';
+      import AnonLink, { type AnonLinkError, type AnonLinkFinalizationParams, type AnonLinkFinalizationResult } from "@anon/sdk-web-link-typescript";
+      import * as jose from "jose";
+
+      const selectedService = ref('instagram');
+
+      const services = {
+        instagram: 'Instagram',
+        linkedin: 'LinkedIn',
+        delta: 'Delta',
+        opentable: 'OpenTable',
+        resy: 'Resy'
+      };
+
+      const config = {
+        environment: import.meta.env.VITE_SVC_ENV || "sandbox",
+        clientId: import.meta.env.VITE_CLIENT_ID, // UserPool's SdkClient id
+        appUserIdToken: import.meta.env.VITE_APP_USER_ID_TOKEN, // JWT from one of your users
+        company: "Anon",
+        companyLogo: "https://assets-global.website-files.com/65aa784d1e7b42a7f2f428bb/65c30d047199273eb47d3b35_favicon.ico",
+        // make sure this matches the ID in the "My Extensions" page in Chrome
+        chromeExtensionId: import.meta.env.VITE_CHROME_EXTENSION_ID || "lbgbplnejdpahnfmnphghjlbedpjjbgd",
+        app: selectedService.value
+      } as any;
+
+      // Define reactive properties for SDK instance
+      const anonLinkInstance = ref();
+
+      const initAnonLink = async (): Promise<void> => {
+        anonLinkInstance.value = AnonLink.init({
+          config,
+          debug: true,
+          onFinalizeLink,
+          onSuccess,
+          onExit,
+        });
+        anonLinkInstance.value.open();
+      }
+
+      // Cleanup function
+      onBeforeUnmount(() => {
+        if (anonLinkInstance.value) {
+          anonLinkInstance.value.destroy();
+        }
+      });
+
+      const onFinalizeLink = async (params: AnonLinkFinalizationParams): Promise<AnonLinkFinalizationResult> =>  {
+        console.log("onFinalizeLink called", params);
+        // call link on Messaging API here
+        return {result: "success"};
+      }
+
+      const onSuccess = () => {
+        console.log("success");
+      }
+      const onExit = (error?: AnonLinkError | null ) => {
+        if (error) {
+          console.log("Link error", error);
+        }
+        anonLinkInstance.value.destroy();
+      }
+      </script>
+
+      <template>
+        <div id="app">
+          <div class="container">
+            <div class="card">
+              <h1>Anon Link</h1>
+              <div>({{ config.environment }})</div>
+              <p>Pick an app to connect.</p>
+              <select v-model="selectedService">
+                <option v-for="(name, id) in services" :key="id" :value="id">{{ name }}</option>
+              </select>
+              <button @click="initAnonLink">Connect</button>
+            </div>
+          </div>
+        </div>
+      </template>
+      ```
+    </CodeBlock>
+  </Accordion>
+</AccordionGroup>
+
+## Chrome Extension SDK
+
+We use a Chrome extension alongside the Typescript SDK.
+
+You could install Anon's Chrome extension [here](https://chromewebstore.google.com/detail/anon-link/lbgbplnejdpahnfmnphghjlbedpjjbgd?hl=en&authuser=0) and use it directly.
+
+Alternately, you could embed the Typescript SDK into your own extension by checking out the guide below.
+
+<Accordion title="Embedding into Your Own Chrome Extension">
+  <Tip>
+    You can get started with a Chrome extension example [here](https://github.com/anon-dot-com/examples/tree/main/chrome-extension).
+  </Tip>
+
+  During the connection process, your users will be prompted to install an extension which embeds Anon's Chrome Extension SDK. To embed it into your own extension, you can follow these steps:
+
+  ### Step 1
+  Create a `.npmrc` file in the same directory as your `package.json` with the following snippet, replacing `${NPM_TOKEN}` with the auth token received from Anon.
+
+  ```jsx
+  @anon:registry=https://npm.cloudsmith.io/anon/anon-sdk/
+  //npm.cloudsmith.io/anon/anon-sdk/:_authToken=${NPM_TOKEN}
+  @npm:registry=https://registry.npmjs.org/
+  ```
+
+  ### Step 2
+  Add the SDK npm package to your project's `package.json`
+
+  ```tsx
+  npm install '@anon/sdk-browser-extension@^0.5.0'
+  ```
+
+  ### Step 3
+  Add the following permissions to your manifest:
+
+  ```tsx
+  "manifest": {
+    "host_permissions": [
+      "<all_urls>",
+      "https://*/*",
+    ],
+    "permissions": [
+      "notifications",
+      "tabs",
+      "activeTab",
+      "storage",
+      "scripting",
+      "cookies"
+    ]
+  }
+  ```
+
+  For reference, [here](https://github.com/anon-dot-com/examples/blob/main/chrome-extension/package.json#L33) is the manifest for Anon's Chrome extension example.
+
+  ### Step 4
+  Integrate the SDK as a background script, as well as a content script. Both are necessary.
+    1. Add this code snippet at the top of your background script
+
+    ```tsx
+    import { anon } from "@anon/sdk-browser-extension"
+
+    anon({
+      extensionContext: "background",
+      environment: "sandbox",
+    })
+    ```
+
+    2. Add this code snippet at the top of your content script
+
+    ```tsx
+    import { anon } from "@anon/sdk-browser-extension"
+
+    anon({
+      extensionContext: "content",
+      environment: "sandbox",
+    })
+    ```
+
+  ### Step 5
+  Install the Chrome extension
+    1. Run `yarn build`
+    2. Go to "Manage extensions" in your Chrome browser
+    3. Enable developer mode
+    4. Click on “Load unpacked extension”
+    5. Navigate to the `build` directory of your Chrome extension project
+    6. Select the folder containing the extension's compiled source and assets (e.g. `chrome-mv3-dev` or `chrome-mv3-prod`)
+
+  ### Step 6
+  Submit to the Chrome Web Store for approval!
+    1. This [step in the examples repo](https://github.com/anon-dot-com/examples/tree/main/chrome-extension#submit-to-the-webstores) may be a good reference.
+    2. **Permission justification** section: Remove any permission that is unused in your extension. Then, give a short justification for each used permission.
+    For example, for "host permission justification", we used the following for Anon Link: "The extension allows the user to share access to their online account for the hosts listed in the manifest."
+    3. **Data usage** section: Depends on your extension's data usage. We did not check anything off for Anon Link.
+
+
+</Accordion>
+
+After connecting user sessions, you are ready to run user sessions!
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Run user sessions" icon='rocket' href="/docs/running-user-sessions/overview">
+    Run the authenticated sessions your user connected!
+  </Card>
+</CardGroup>
