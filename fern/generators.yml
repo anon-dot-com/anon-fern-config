@@ -9,7 +9,8 @@ groups:
         output:
           location: npm
           package-name: "anon"
-          token: ${NPM_TOKEN}
+          # uncomment to publish to npm
+          # token: ${NPM_TOKEN}
         github:
           repository: fern-demo/anon-typescript-sdk
         smart-casing: true
