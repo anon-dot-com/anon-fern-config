@@ -56,4 +56,4 @@ components:
       scheme: bearer
       x-fern-bearer:
         name: apiKey
-        env: API_KEY
+        env: ANON_API_KEY
