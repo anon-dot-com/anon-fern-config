@@ -2,6 +2,8 @@ instances:
   - url: https://anon.docs.buildwithfern.com
 title: Anon | Documentation
 
+default-language: typescript
+
 layout: 
   page-width: full
   tabs-placement: header
